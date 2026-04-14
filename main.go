@@ -3,20 +3,30 @@ package main
 import (
 	"fmt"
 	"gator/internal/config"
+	"os"
 )
 
 func main() {
 	cfg := config.Read()
-	if cfg == (config.Config{}) {
-		return
+	currentState := state{cfg: &cfg}
+	currentCommands := commands{cmds: make(map[string]func(*state, command) error)}
+	currentCommands.register("login", handlerLogin)
+
+	currentArgs := os.Args
+	if len(currentArgs) < 2 {
+		fmt.Println("Requires one argument atleast")
+		os.Exit(1)
 	}
-	err := config.SetUser(cfg, "cute")
+
+	commandName := currentArgs[1]
+	currentArgs = currentArgs[2:]
+
+	err := currentCommands.run(
+		&currentState,
+		command{name: commandName, args: currentArgs},
+	)
 	if err != nil {
-		return
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
 	}
-	newCfg := config.Read()
-	if newCfg == (config.Config{}) {
-		return
-	}
-	fmt.Printf("Current Configuration: %v\n", newCfg)
 }
