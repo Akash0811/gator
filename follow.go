@@ -32,6 +32,9 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 			FeedID:    feed.ID,
 		},
 	)
+	if err != nil {
+		return err
+	}
 
 	fmt.Printf("user %s is now following feed %s!\n", feedFollow.UserName, feedFollow.FeedName)
 
