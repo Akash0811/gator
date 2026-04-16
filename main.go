@@ -1,16 +1,26 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"gator/internal/config"
+	"gator/internal/database"
 	"os"
+
+	_ "github.com/lib/pq" // Postgres driver
 )
 
 func main() {
 	cfg := config.Read()
-	currentState := state{cfg: &cfg}
+
+	db, err := sql.Open("postgres", cfg.DBUrl)
+	dbQueries := database.New(db)
+
+	currentState := state{cfg: &cfg, db: dbQueries}
+
 	currentCommands := commands{cmds: make(map[string]func(*state, command) error)}
 	currentCommands.register("login", handlerLogin)
+	currentCommands.register("register", handlerRegister)
 
 	currentArgs := os.Args
 	if len(currentArgs) < 2 {
@@ -21,10 +31,11 @@ func main() {
 	commandName := currentArgs[1]
 	currentArgs = currentArgs[2:]
 
-	err := currentCommands.run(
+	err = currentCommands.run(
 		&currentState,
 		command{name: commandName, args: currentArgs},
 	)
+
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"gator/internal/config"
 )
@@ -10,7 +11,15 @@ func handlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("Login expects a single argument")
 	}
 
-	err := config.SetUser(*s.cfg, cmd.args[0])
+	_, err := s.db.GetUser(
+		context.Background(),
+		cmd.args[0],
+	)
+	if err != nil {
+		return err
+	}
+
+	err = config.SetUser(*s.cfg, cmd.args[0])
 	if err != nil {
 		return err
 	}
