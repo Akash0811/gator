@@ -21,6 +21,8 @@ func main() {
 	currentCommands := commands{cmds: make(map[string]func(*state, command) error)}
 	currentCommands.register("login", handlerLogin)
 	currentCommands.register("register", handlerRegister)
+	currentCommands.register("reset", handlerReset)
+	currentCommands.register("users", handlerListUsers)
 
 	currentArgs := os.Args
 	if len(currentArgs) < 2 {
