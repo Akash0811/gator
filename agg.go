@@ -2,16 +2,21 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"gator/internal/database"
 	"gator/internal/rss"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 func scrapeFeeds(s *state) {
 	feed, err := s.db.GetNextFeedToFetch(context.Background())
 	if err != nil {
-		fmt.Printf("Could not find next feed to fetch")
+		fmt.Printf("Could not find next feed to fetch: %v", err)
 		return
 	}
 
@@ -20,24 +25,56 @@ func scrapeFeeds(s *state) {
 		feed.Url,
 	)
 	if err != nil {
-		fmt.Printf("Failed to Fetch from url %s: %v", feed.Url, err)
+		fmt.Printf("Failed to Fetch from url %s: %v\n", feed.Url, err)
 		return
 	}
 
-	fmt.Printf("%-20s | %-40s\n", "Link", "Title")
-	fmt.Println("---------------------|------------------------------------------|---------------------")
-	fmt.Printf("%-20s | %-40s\n",
-		dataFeed.Channel.Link,
-		dataFeed.Channel.Title,
-		// dataFeed.Channel.Description,
-	)
+	// fmt.Printf("%-20s | %-40s\n", "Link", "Title")
+	// fmt.Println("---------------------|------------------------------------------|---------------------")
+	// fmt.Printf("%-20s | %-40s\n",
+	// 	dataFeed.Channel.Link,
+	// 	dataFeed.Channel.Title,
+	// 	// dataFeed.Channel.Description,
+	// )
+
+	// for _, nestedFeed := range dataFeed.Channel.Item {
+	// 	fmt.Printf("%-20s | %-40s\n",
+	// 		nestedFeed.Link,
+	// 		nestedFeed.Title,
+	// 		// nestedFeed.Description,
+	// 	)
+	// }
 
 	for _, nestedFeed := range dataFeed.Channel.Item {
-		fmt.Printf("%-20s | %-40s\n",
-			nestedFeed.Link,
-			nestedFeed.Title,
-			// nestedFeed.Description,
+		parsedTime, err := time.Parse(time.RFC1123Z, nestedFeed.PubDate)
+		if err != nil {
+			fmt.Printf("Error while parsing time: %v for %v\n", err, nestedFeed.PubDate)
+			continue
+		}
+		_, err = s.db.CreatePost(
+			context.Background(),
+			database.CreatePostParams{
+				ID:          uuid.New(),
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+				Title:       sql.NullString{String: nestedFeed.Title, Valid: true},
+				Url:         nestedFeed.Link,
+				Description: sql.NullString{String: nestedFeed.Description, Valid: true},
+				PublishedAt: sql.NullTime{Time: parsedTime, Valid: true},
+				FeedID:      feed.ID,
+			},
 		)
+		if err != nil {
+			var pqErr *pq.Error
+			if errors.As(err, &pqErr) {
+				if pqErr.Code == "23505" {
+					fmt.Printf("Already existing post %s with url %s\n", nestedFeed.Title, nestedFeed.Link)
+				}
+			} else {
+				fmt.Printf("Error while posting: %v\n", err)
+				return
+			}
+		}
 	}
 
 	err = s.db.MarkFeedFetch(
@@ -48,11 +85,11 @@ func scrapeFeeds(s *state) {
 		},
 	)
 	if err != nil {
-		fmt.Printf("Could not update feed %s with url %s", feed.Name, feed.Url)
+		fmt.Printf("Could not update feed %s with url %s\n", feed.Name, feed.Url)
 		return
 	}
 
-	fmt.Printf("Updated data for feed %s with url %s", feed.Name, feed.Url)
+	fmt.Printf("Updated data for feed %s with url %s\n", feed.Name, feed.Url)
 }
 
 func handlerAgg(s *state, cmd command) error {
