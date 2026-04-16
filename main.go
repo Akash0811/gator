@@ -24,10 +24,10 @@ func main() {
 	currentCommands.register("reset", handlerReset)
 	currentCommands.register("users", handlerListUsers)
 	currentCommands.register("agg", handlerAgg)
-	currentCommands.register("addfeed", handlerAddFeed)
+	currentCommands.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	currentCommands.register("feeds", handlerListFeeds)
-	currentCommands.register("follow", handlerFollow)
-	currentCommands.register("following", handlerFollowing)
+	currentCommands.register("follow", middlewareLoggedIn(handlerFollow))
+	currentCommands.register("following", middlewareLoggedIn(handlerFollowing))
 
 	currentArgs := os.Args
 	if len(currentArgs) < 2 {

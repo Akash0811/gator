@@ -9,17 +9,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("AddFeed expects two arguments. Name of Feed and URL in that order...")
-	}
-
-	currentUser, err := s.db.GetUser(
-		context.Background(),
-		s.cfg.CurrentUserName,
-	)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.db.CreateFeed(
@@ -30,7 +22,7 @@ func handlerAddFeed(s *state, cmd command) error {
 			UpdatedAt: time.Now(),
 			Name:      cmd.args[0],
 			Url:       cmd.args[1],
-			UserID:    currentUser.ID,
+			UserID:    user.ID,
 		},
 	)
 	if err != nil {
@@ -43,7 +35,7 @@ func handlerAddFeed(s *state, cmd command) error {
 			ID:        uuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
-			UserID:    currentUser.ID,
+			UserID:    user.ID,
 			FeedID:    feed.ID,
 		},
 	)
@@ -51,7 +43,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("Feed %v was registered successfully and is being followed by %s!\n", feed, currentUser.Name)
+	fmt.Printf("Feed %v was registered successfully and is being followed by %s!\n", feed, user.Name)
 
 	return nil
 }
