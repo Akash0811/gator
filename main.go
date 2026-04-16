@@ -25,6 +25,7 @@ func main() {
 	currentCommands.register("users", handlerListUsers)
 	currentCommands.register("agg", handlerAgg)
 	currentCommands.register("addfeed", handlerAddFeed)
+	currentCommands.register("feeds", handlerListFeeds)
 
 	currentArgs := os.Args
 	if len(currentArgs) < 2 {
