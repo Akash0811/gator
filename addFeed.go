@@ -37,7 +37,21 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("Feed %v was registered successfully!\n", feed)
+	_, err = s.db.CreateFeedFollow(
+		context.Background(),
+		database.CreateFeedFollowParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			UserID:    currentUser.ID,
+			FeedID:    feed.ID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Feed %v was registered successfully and is being followed by %s!\n", feed, currentUser.Name)
 
 	return nil
 }
