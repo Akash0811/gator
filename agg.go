@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"gator/internal/database"
-	"gator/internal/rss"
 	"time"
+
+	"github.com/Akash0811/gator/internal/database"
+	"github.com/Akash0811/gator/internal/rss"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -28,22 +29,6 @@ func scrapeFeeds(s *state) {
 		fmt.Printf("Failed to Fetch from url %s: %v\n", feed.Url, err)
 		return
 	}
-
-	// fmt.Printf("%-20s | %-40s\n", "Link", "Title")
-	// fmt.Println("---------------------|------------------------------------------|---------------------")
-	// fmt.Printf("%-20s | %-40s\n",
-	// 	dataFeed.Channel.Link,
-	// 	dataFeed.Channel.Title,
-	// 	// dataFeed.Channel.Description,
-	// )
-
-	// for _, nestedFeed := range dataFeed.Channel.Item {
-	// 	fmt.Printf("%-20s | %-40s\n",
-	// 		nestedFeed.Link,
-	// 		nestedFeed.Title,
-	// 		// nestedFeed.Description,
-	// 	)
-	// }
 
 	for _, nestedFeed := range dataFeed.Channel.Item {
 		parsedTime, err := time.Parse(time.RFC1123Z, nestedFeed.PubDate)

@@ -3,9 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"gator/internal/config"
-	"gator/internal/database"
 	"os"
+
+	"github.com/Akash0811/gator/internal/config"
+	"github.com/Akash0811/gator/internal/database"
 
 	_ "github.com/lib/pq" // Postgres driver
 )

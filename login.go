@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"gator/internal/config"
+
+	"github.com/Akash0811/gator/internal/config"
 )
 
 func handlerLogin(s *state, cmd command) error {

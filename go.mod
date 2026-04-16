@@ -1,4 +1,4 @@
-module gator
+module github.com/Akash0811/gator
 
 go 1.26.1
 

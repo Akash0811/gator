@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"gator/internal/database"
+
+	"github.com/Akash0811/gator/internal/database"
 )
 
 func handlerFollowing(s *state, cmd command, user database.User) error {
