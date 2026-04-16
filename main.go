@@ -23,6 +23,7 @@ func main() {
 	currentCommands.register("register", handlerRegister)
 	currentCommands.register("reset", handlerReset)
 	currentCommands.register("users", handlerListUsers)
+	currentCommands.register("agg", handlerAgg)
 
 	currentArgs := os.Args
 	if len(currentArgs) < 2 {
